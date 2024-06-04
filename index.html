@@ -100,7 +100,7 @@
                 shown that such a representation can disentangle non-linear
                 features, so that it becomes possible to learn by simply 
                 training a last linear layer. Here, we ask whether such a 
-                representation can be beneficial to acoustic data as well.
+                representation can be beneficial for acoustic data as well.
             </p>
 
             <p>
@@ -142,8 +142,9 @@
                 
                 The baseline (a) received a score of 0.58, while the 
                 experimental version (b) received a score of 0.48, performing no 
-                better than random. Therefore, it seems that in fact, the choice
-                of parameters led to an increase of difficulty in learning.
+                better than random. Therefore, it seems that in fact, this 
+                representation along with the choice of architecture led to an 
+                increase of difficulty in learning.
             </p>
 
             <p>
@@ -151,9 +152,10 @@
                 We continued training the baseline (a) for 40 epochs, and it 
                 receives a slightly improved score of 0.60 on BirdCLEF. On the 
                 one hand, this performs worse than an comparably-trained 
-                EfficientNet. However, the this baseline (a) is smaller in size
-                (48mb vs 74mb), and it runs much faster on CPU only, as required
-                by the BirdCLEF competition (20min vs 80min).
+                EfficientNet with a score of 0.64. However, the this baseline 
+                (a) is smaller in size (48mb vs 74mb), and it runs much faster 
+                on CPU only, as required by the BirdCLEF competition (20min vs 
+                80min).
                 
                 This suggests that it may be worth exploring additional resnet 
                 architectures that treat the spectrogram as a time series rather

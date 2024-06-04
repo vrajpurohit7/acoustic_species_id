@@ -63,6 +63,109 @@
             </p>
             
         </div>
+
+        
+        <!-- Representation -->
+        <div class="w3-light-grey w3-padding-large w3-padding-32 w3-margin-top" id="representation">
+            <h2> Representation Exploration </h2>
+            <p>
+                <strong>Background.</strong>
+                In addition to exploring additional architectures, we also 
+                consider alternative representations of audio data. As noted
+                above, a common approach is to compute the spectrogram of an 
+                audio clip before treating it as an RGB image. In particular,
+                this means learning using architectures designed for natural 
+                images. Whereas these architectures have been seen to be able
+                to recover perceptually salient features such as edges and 
+                textures in natural images, it is less clear whether analogous
+                features should be as prominent in spectrograms.
+            </p>
+
+            <p>
+                <strong>Prior work.</strong>
+                We adapted the <em>expand-and-sparsify</em> representation, 
+                which was introduced by <a href="https://arxiv.org/abs/2006.03741">Dasgupta and Tosh (2020)</a>.
+                In their paper, they study a simplified neural architecture 
+                found initially found in the <a href="https://www.science.org/doi/full/10.1126/science.aam9868">fruit fly's olfactory system</a>. 
+                In the fly brain, representations of olfactory stimuli are 
+                constructed as follows: a fly has around 50 types of receptors 
+                that can detect different components of odors. When exposed to
+                a stimulus, the corresponding activations generate an initial
+                <em>dense</em> representation of the odor, which we can model 
+                as a vector in 50 dimensions. In the <em>expand</em> step, this
+                initial representation is randomly projected into much higher 
+                dimensions. This is followed by a <em>sparsify</em> step, where 
+                only the top-<em>k</em> components are kept, so that this leads 
+                to a <em>k</em>-sparse high-dimensional representation. It was 
+                shown that such a representation can disentangle non-linear
+                features, so that it becomes possible to learn by simply 
+                training a last linear layer. Here, we ask whether such a 
+                representation can be beneficial to acoustic data as well.
+            </p>
+
+            <p>
+                <strong>Our work.</strong>
+                In order to adapt this method to time series data, we 
+                implemented a convolutional version of the expand-and-sparsify 
+                architecture. To briefly describe this method, suppose we have
+                a Mel spectrogram, which is a multi-dimensional time series.
+                That is, it is an array of size <code>(n_mels, duration)</code>. 
+                Then, we can construct a kernel of size 
+                <code>(n_output, n_mels, window)</code> which scans along the 
+                spectrogram (here the length of <code>window</code> is smaller 
+                than the audio clip's <code>duration</code>). After taking the 
+                convolution, we obtain a new time series of with dimension
+                 <code>n_output</code>. This can be passed to downstream models.
+            </p>
+
+            <p>
+                <strong>Experimental method.</strong>
+                To evaluate this method, we built a small residual network 
+                for time series data. We can think of a time series object as 
+                having two axes: a spatial axis and a temporal axis. Consider 
+                a <code>d</code>-dimensional time series of length 
+                <code>T</code>, which is an array of shape <code>(d,T)</code>.
+                We design the resnet to have convolutional kernels that span all 
+                spatial dimensions at once, so that its shape is 
+                <code>(d, T_window)</code>. We trained two such resnets: (a) the 
+                baseline takes the Mel spectrogram directly, while (b) the 
+                experimental version takes the expand-and-sparsify 
+                representation.
+            </p>
+
+            <p>
+                <strong>Results.</strong>
+                While the hope was that the expand-and-sparsify representation
+                can speed up training by disentagling non-linear features, it
+                does not appear to make learning easier. We submitted these two
+                models after 2 epochs of training to the BirdCLEF competition. 
+                
+                The baseline (a) received a score of 0.58, while the 
+                experimental version (b) received a score of 0.48, performing no 
+                better than random. Therefore, it seems that in fact, the choice
+                of parameters led to an increase of difficulty in learning.
+            </p>
+
+            <p>
+                <strong>Additional discussion.</strong>
+                We continued training the baseline (a) for 40 epochs, and it 
+                receives a slightly improved score of 0.60 on BirdCLEF. On the 
+                one hand, this performs worse than an comparably-trained 
+                EfficientNet. However, the this baseline (a) is smaller in size
+                (48mb vs 74mb), and it runs much faster on CPU only, as required
+                by the BirdCLEF competition (20min vs 80min).
+                
+                This suggests that it may be worth exploring additional resnet 
+                architectures that treat the spectrogram as a time series rather
+                than a natural image. 
+
+                Finally, the poor results for the expand-and-sparsify 
+                representation do not necessarily rule it out; a more robust 
+                set of experiments is required for this, and there are further
+                modifications suggested in the original paper that we can also 
+                try.
+            </p>
+        </div>
         
         <!-- Ludwig's part -->
         <div class="w3-light-grey w3-padding-large w3-padding-32 w3-margin-top" id="ensemble">

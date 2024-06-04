@@ -50,6 +50,11 @@ class ExpandSparsifyRepresentation:
 
 
 class Representer:
+    """
+    Usage: given `audio`, a torch.Tensor of shape (1, 194, duration)
+    > representer = Representer(n_mels=194, sample_rate=32_000, n_fft=1400)
+    > mel = representer(audio)
+    """
     def __init__(self, n_mels, sample_rate, n_fft):
         self.n_mels = n_mels
         self.sample_rate = sample_rate

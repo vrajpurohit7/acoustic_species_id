@@ -24,6 +24,45 @@
             <p>Our objective is to leverage modern machine learning architectures and domain-specific adaptations to accurately identify bird species from acoustic data. This work is part of our broader efforts to aid ecological research and conservation through advanced bioacoustic classification systems.</p>
             <p>Currently, we are working on implementing and evaluating various machine learning models, including CNNs and newer RNN architectures, to improve the accuracy and reliability of our identification systems. Our work contributes to the BirdCLEF 2024 competition on Kaggle, aiming to push the boundaries of current bioacoustic research.</p>
         </div>
+
+        <!-- Architecture -->
+        <div class="w3-light-grey w3-padding-large w3-padding-32 w3-margin-top" id="architecture">
+            <h2> Architecture Exploration </h2>
+            <p>
+                The standard pipeline for audio classification is convolutional; an image is first converted into a spectrogram, which is then passed through a standard convolutional architecture like EfficientNet.
+                However, recently a new class of state-space models have been shown to be effective in audio classification tasks.
+                We explored the potential application of such models to bird call classification, integrating them into our existing pipeline to compare their performance in a controlled environment.
+            </p>
+            <p>
+                We chose the <a href="https://arxiv.org/abs/2312.00752" target="_blank">Mamba architecture</a> as the backbone for our method, owing to its relative success on modeling audio data.
+                One initial challenge was that the version of Mamba compatible with audio data -- a mixture of Mamba and
+                <a href="https://arxiv.org/abs/2111.00396" target="_blank">S4</a> in a
+                <a href="https://arxiv.org/abs/2202.09729" target="_blank">Sashimi architecture</a>
+                -- has not been publicly implemented.
+                Splicing together code, we obtained a model that successfully began to train but was unusably slow in training, likely due to backpropagation through time for the time-varying Mamba component.
+                The Mamba model could train at roughly 1.5 clips per second, compared to 180 from EfficientNet.
+                After training for 5 days on a 24-GB GPU, the model had trained for only two epochs and achieved validation mAP of roughly 0.1 -- an improvement over its 0.05 to start with, but nowhere near the 0.5 to 0.7 range of EfficientNet trained on many more epochs.
+                At this point, we determined that without significant optimization, the model would not be able to compete with our existing pipeline.
+            </p>
+            <p>
+                We found more success in adapting <a href="https://arxiv.org/abs/2405.11831" target="_blank">SSAMBA</a>, a Mamba-based model operating on spectrograms which is pretrained in such a way as to adapt quickly to classification tasks.
+                The SSAMBA work found success in classification on the <a href="https://github.com/karolpiczak/ESC-5" target="_blank">ESC dataset</a>, which includes some categories of bird calls, and so it seemed to be a natural fit for our task.
+                Such a pretrained model would hopefully be more data-efficient than our existing pipeline, which is trained from scratch and thus begins with no acoustic pattern recognition.
+            </p>
+            <p>
+                We integrated SSAMBA into our pipeline, utilizing the same data augmentation and training setups as the EfficientNet models and the optimization parameters from the SSAMBA paper.
+                The model is still significantly less efficient in training than EfficientNet, at a rate of 7 to 8 clips per second.
+                Due to time constraints, all comparisons are made at 2 epochs.
+                This is not entirely fair, as EfficientNet is trained for 50 epochs, but it is a reasonable comparison given the ability to train SSAMBA.
+
+                We find that SSAMBA-small and SSAMBA-base both achieve a higher train mAP than EfficientNet, exceeding 0.30 when EFC is only 0.27 (SSAMBA-tiny is still training).
+                However, the validation mAP is lower for both SSAMBA models, indicating that they are overfitting.
+
+                Given that SSAMBA-small has only 26M parameters to EFC's 39M, and that SSAMBA-tiny is on a trajectory to win in training mAP as well, it is interesting to see that SSAMBA is sufficiently expressive to overfit to such a complicated distribution.
+                This is encouraging, with the potential that small SSAMBA models with proper regularization and more aggressive data augmentation could be competitive in this domain.
+            </p>
+            
+        </div>
         
         <!-- Ludwig's part -->
         <div class="w3-light-grey w3-padding-large w3-padding-32 w3-margin-top" id="ensemble">
